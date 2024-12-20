@@ -38,12 +38,12 @@ class LoginPage extends StatelessWidget {
       return TextField(
         controller: emailController,
         decoration: InputDecoration(
-          labelText: "Your email",
+          labelText: "Enter email",
           labelStyle: blackTextStyle.copyWith(
             fontSize: 20,
             fontWeight: light,
           ),
-          hintText: "Enter your email...",
+          hintText: "Enter your Email",
           hintStyle: blackTextStyle.copyWith(
             fontSize: 20,
             fontWeight: light,
@@ -69,12 +69,12 @@ class LoginPage extends StatelessWidget {
         obscureText: true,
         controller: passwordController,
         decoration: InputDecoration(
-          labelText: "Your password",
+          labelText: "Enter password",
           labelStyle: blackTextStyle.copyWith(
             fontSize: 20,
             fontWeight: light,
           ),
-          hintText: "Your password here...",
+          hintText: "Enter Your password",
           hintStyle: blackTextStyle.copyWith(
             fontSize: 20,
             fontWeight: light,
@@ -113,7 +113,7 @@ class LoginPage extends StatelessWidget {
             ),
             const SizedBox(height: 54),
             Text(
-              'Please log in to continue',
+              'Log in to continue',
               style: blackTextStyle.copyWith(
                 fontSize: 20,
                 fontWeight: light,
@@ -147,7 +147,7 @@ class LoginPage extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        'Not a member?',
+                        'Make an account?',
                         style: blackTextStyle.copyWith(
                           fontSize: 20,
                           fontWeight: light,

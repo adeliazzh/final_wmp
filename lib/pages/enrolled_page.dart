@@ -97,7 +97,7 @@ class _EnrolledPageState extends State<EnrolledPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'You have enrolled to : ',
+                  'You have enrolled to:',
                   style: blackTextStyle.copyWith(
                     fontSize: 32,
                     fontWeight: regular,
@@ -125,6 +125,39 @@ class _EnrolledPageState extends State<EnrolledPage> {
                             ],
                           );
                         },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: kWhiteColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: kBlackColor, width: 1),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Total Credits:',
+                        style: blackTextStyle.copyWith(
+                          fontSize: 18,
+                          fontWeight: medium,
+                        ),
+                      ),
+                      Text(
+                        subjectCredit
+                            .fold<int>(0, (prev, credit) => prev + credit)
+                            .toString(),
+                        style: blackTextStyle.copyWith(
+                          fontSize: 18,
+                          fontWeight: bold,
+                        ),
                       ),
                     ],
                   ),

@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:final_wmp/shared/theme.dart';
 import 'package:final_wmp/widgets/customized_button.dart';
-import 'package:final_wmp/widgets/subject_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -16,12 +15,25 @@ class _EnrollmentPageState extends State<EnrollmentPage> {
   List<String> subjectNames = [];
   List<int> subjectCredit = [];
   bool isLoading = true;
-  List<bool> arrayChosen = [];
   List<int> selectedSubject = [];
   int totalCredit = 0;
   String errorMessage = "";
   List<String> chosenSubject = [];
   List<int> chosenCredit = [];
+  String userName = "";
+
+  Future<void> fetchUserName() async {
+    String? userId = getUserId();
+    if (userId != null) {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+      setState(() {
+        userName = userDoc['name'] ?? "User";
+      });
+    }
+  }
 
   Future<void> assignSubjects(String userId) async {
     try {
@@ -77,22 +89,6 @@ class _EnrollmentPageState extends State<EnrollmentPage> {
     totalCredit -= subjectCredit[index];
   }
 
-  void pushSubject(int index) {
-    setState(() {
-      if (!selectedSubject.contains(index)) {
-        selectedSubject.add(index);
-        addCredit(index);
-      }
-    });
-  }
-
-  void removeSubject(int index) {
-    setState(() {
-      selectedSubject.remove(index);
-      removeCredit(index);
-    });
-  }
-
   void toggleSubject(int index) {
     setState(() {
       if (selectedSubject.contains(index)) {
@@ -105,22 +101,7 @@ class _EnrollmentPageState extends State<EnrollmentPage> {
     });
   }
 
-  void pushItem(int index) {
-    setState(() {
-      arrayChosen[index] = !arrayChosen[index];
-    });
-  }
-
-  void popItem() {
-    if (arrayChosen.isNotEmpty) {
-      setState(() {
-        arrayChosen.removeLast();
-      });
-    }
-  }
-
   Future<void> _fetchSubject() async {
-    print('Function called!');
     try {
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection('subjects')
@@ -133,25 +114,16 @@ class _EnrollmentPageState extends State<EnrollmentPage> {
 
         setState(() {
           subjectNames = List<String>.from(subjectNameList);
-
           subjectCredit = List<int>.from(
               subjectCreditList.map((item) => item is int ? item : 0));
-
-          arrayChosen = List<bool>.filled(subjectNames.length, false);
-
           isLoading = false;
         });
-
-        print('Subject Names: $subjectNames');
-        print('Subject Credits: $subjectCredit');
       } else {
-        print('User document does not exist!');
         setState(() {
           isLoading = false;
         });
       }
     } catch (e) {
-      print('Error fetching data: $e');
       setState(() {
         isLoading = false;
       });
@@ -162,6 +134,7 @@ class _EnrollmentPageState extends State<EnrollmentPage> {
   void initState() {
     super.initState();
     _fetchSubject();
+    fetchUserName();
   }
 
   @override
@@ -170,12 +143,39 @@ class _EnrollmentPageState extends State<EnrollmentPage> {
       backgroundColor: kWhiteColor,
       body: ListView(
         children: [
-          Container(
-            margin: EdgeInsets.only(
-                top: 32, left: defaultMargin, right: defaultMargin),
+          Padding(
+            padding: EdgeInsets.all(defaultMargin),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Container(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 153, 199, 203),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          'Welcome, $userName!',
+                          style: blackTextStyle.copyWith(
+                            fontSize: 22,
+                            fontWeight: bold,
+                          ),
+                        ),
+                        Text(
+                          'Max Credits: 24',
+                          style: blackTextStyle.copyWith(
+                            fontSize: 18,
+                            fontWeight: regular,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Text(
                   'Select Subject',
                   style: blackTextStyle.copyWith(
@@ -183,31 +183,7 @@ class _EnrollmentPageState extends State<EnrollmentPage> {
                     fontWeight: regular,
                   ),
                 ),
-                const SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Subject Name',
-                      style: blackTextStyle.copyWith(
-                        fontSize: 20,
-                        fontWeight: light,
-                      ),
-                    ),
-                    Text(
-                      'Subject Credit',
-                      style: blackTextStyle.copyWith(
-                        fontSize: 20,
-                        fontWeight: light,
-                      ),
-                    )
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
+                const SizedBox(height: 20),
                 ...List.generate(
                   subjectNames.length,
                   (index) {
@@ -216,56 +192,69 @@ class _EnrollmentPageState extends State<EnrollmentPage> {
                         GestureDetector(
                           onTap: () {
                             toggleSubject(index);
-                            pushItem(index);
-                            print(selectedSubject);
-                            print(totalCredit);
-                            print(arrayChosen[index]);
                           },
-                          child: SubjectCard(
-                            subjectCredit: subjectCredit[index],
-                            subjectName: subjectNames[index],
-                            isChosen: arrayChosen[index],
+                          child: Card(
+                            elevation: 3,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            color: selectedSubject.contains(index)
+                                ? Colors.green.shade100
+                                : Colors.white,
+                            child: ListTile(
+                              title: Text(
+                                subjectNames[index],
+                                style: blackTextStyle.copyWith(
+                                  fontSize: 18,
+                                  fontWeight: medium,
+                                ),
+                              ),
+                              trailing: Text(
+                                '${subjectCredit[index]} Credits',
+                                style: blackTextStyle.copyWith(
+                                  fontSize: 16,
+                                  fontWeight: light,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                        const SizedBox(
-                          height: 12,
-                        ),
+                        const SizedBox(height: 12),
                       ],
                     );
                   },
                 ),
-                const SizedBox(
-                  height: 20,
+                const SizedBox(height: 20),
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'Selected Credits: $totalCredit/24',
+                    style: blackTextStyle.copyWith(
+                      fontSize: 18,
+                      fontWeight: medium,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-                checkCredit()
-                    ? Text(
-                        errorMessage,
-                        style: blackTextStyle.copyWith(
-                          fontSize: 20,
-                          color: Colors.red.shade400,
-                          fontWeight: regular,
-                        ),
-                      )
-                    : const SizedBox(),
-                const SizedBox(
-                  height: 8,
-                ),
+                const SizedBox(height: 16),
                 CustomizedButton(
                   height: 60,
                   onTap: () {
-                    checkCredit()
-                        ? null
-                        : assignSubjects(getUserId().toString());
-                    Navigator.pushReplacementNamed(context, '/enrolled-page');
+                    if (!checkCredit()) {
+                      assignSubjects(getUserId()!);
+                      Navigator.pushReplacementNamed(context, '/enrolled-page');
+                    }
                   },
-                  text: 'Enroll Now!',
+                  text: 'Confirm Selection',
                 ),
-                const SizedBox(
-                  height: 40,
-                ),
+                const SizedBox(height: 40),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
